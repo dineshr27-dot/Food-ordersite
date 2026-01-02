@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #222831;
+      color: #EEEEEE;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00ADB5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #393E46;
+      color: #EEEEEE;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #555;
+    }
+
+    th {
+      background-color: #00ADB5;
+      color: #222831;
+    }
+
+    tfoot td {
+      font-weight: bold;
+      background-color: #393E46;
+    }
+
+    .buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin: 5px;
+      background-color: #00ADB5;
+      color: #222831;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #00949a;
+    }
+
+    button:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Your Cart</h1>
+
+<table id="cartTable">
+  <thead>
+    <tr>
+      <th>Food Item</th>
+      <th>Price</th>
+      <th>Qty</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="cartBody"></tbody>
+  <tfoot>
+    <tr>
+      <td colspan="4">Grand Total</td>
+      <td id="grandTotal">₹0</td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="buttons">
+  <button onclick="clearCart()">Clear Cart</button>
+  <button onclick="placeOrder()" id="orderBtn">Order Now</button>
+</div>
+
+<script>
+  let cart = JSON.parse(localStorage.getItem("cart")) || {};
+  const cartBody = document.getElementById("cartBody");
+  const grandTotal = document.getElementById("grandTotal");
+  const orderBtn = document.getElementById("orderBtn");
+
+  function loadCart() {
+    cartBody.innerHTML = "";
+    let total = 0;
+    let hasItems = false;
+
+    for (const item in cart) {
+      const { price, qty } = cart[item];
+      const itemTotal = price * qty;
+      total += itemTotal;
+      hasItems = true;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${item}</td>
+        <td>₹${price}</td>
+        <td>${qty}</td>
+        <td>₹${itemTotal}</td>
+        <td><button onclick="removeItem('${item}')">Remove</button></td>
+      `;
+      cartBody.appendChild(row);
+    }
+
+    grandTotal.textContent = `₹${total}`;
+
+    if (!hasItems) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="5">Your cart is empty.</td>`;
+      cartBody.appendChild(row);
+      orderBtn.disabled = true;
+    } else {
+      orderBtn.disabled = false;
+    }
+  }
+
+  function removeItem(itemName) {
+    delete cart[itemName];
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+  }
+
+  function clearCart() {
+    localStorage.removeItem("cart");
+    cart = {};
+    loadCart();
+  }
+
+  function placeOrder() {
+    if (Object.keys(cart).length > 0) {
+      window.location.href = "order.html";
+    }
+  }
+
+  // Initial load
+  loadCart();
+</script>
+
+</body>
+</html>

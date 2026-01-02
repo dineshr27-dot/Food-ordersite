@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #222831;
+      color: #EEEEEE;
+    }
+
+    header {
+      background-color: #00ADB5;
+      color: #222831;
+      padding: 10px;
+    }
+
+    form {
+      width: 90%;
+      max-width: 500px;
+      margin: 30px auto;
+      text-align: left;
+      padding: 25px;
+      border: 1px solid #393E46;
+      border-radius: 10px;
+      background-color: #393E46;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #EEEEEE;
+      color: #222831;
+    }
+
+    button {
+      background-color: #00ADB5;
+      color: #222831;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    button:hover {
+      background-color: #00949a;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Order Confirmation</h1>
+</header>
+
+<form onsubmit="submitOrder(event)">
+  <h2>Delivery Details</h2>
+
+  <label for="name">Name:</label>
+  <input type="text" id="name" required placeholder="Enter Your Name" />
+
+  <label for="mobile">Mobile Number:</label>
+  <input type="text" id="mobile" required placeholder="10-digit number" />
+
+  <label for="address">Address:</label>
+  <textarea id="address" rows="4" required placeholder="Enter Your Address"></textarea>
+
+  <button type="submit">Place Order</button>
+</form>
+
+<script>
+ function submitOrder(event) {
+  event.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const mobile = document.getElementById("mobile").value.trim();
+  const address = document.getElementById("address").value.trim();
+
+  if (!name || !mobile || !address) {
+    alert("Please fill out all fields.");
+    return;
+  }
+
+  const mobileRegex = /^[6-9]\d{9}$/;
+  if (!mobileRegex.test(mobile)) {
+    alert("Please enter a valid 10-digit mobile number.");
+    return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem("cart")) || {};
+  let total = 0;
+  for (const item in cart) {
+    total += cart[item].price * cart[item].qty;
+  }
+
+  fetch("order.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, mobile, address, cart, total })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert("Order placed successfully!");
+      localStorage.removeItem("cart");
+      window.location.href = "index.html";
+    } else {
+      alert("Order failed: " + (data.error || "Unknown error"));
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert("An error occurred while placing the order.");
+  });
+}
+</script>
+
+</body>
+</html>
